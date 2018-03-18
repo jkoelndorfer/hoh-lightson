@@ -11,6 +11,7 @@
 # Given the current puzzle, this script returns the solution requiring
 # the fewest number of steps.
 
+import sys
 from typing import Generator, List, Optional, Tuple
 
 
@@ -230,6 +231,17 @@ class LightsOnSolutionAlgorithm:
 
         return self.discovered_boards.get(board_state.key, None)
 
+    def find_solution(self, board_state: BoardState) -> Optional[List[BoardState]]:
+        # This gives us the BoardState that we start with. We can walk the BoardState objects
+        # to provide a nifty list.
+        current_bs = self._find_board_solution(board_state)
+        solution_list = list()
+
+        while current_bs is not None:
+            solution_list.append(current_bs)
+            current_bs = current_bs.next_solution_board
+        return solution_list or None
+
     def _process_board_state(self, board_state: BoardState) -> None:
         for c in board_state.coordinates():
             potential_new_board: BoardState = self.clicker.click(board_state, c)
@@ -258,7 +270,8 @@ if __name__ == "__main__":
     bs._board = 0b001_101_010
     renderer = BoardStateTextRenderer()
     algorithm = LightsOnSolutionAlgorithm()
-    solution = algorithm._find_board_solution(bs)
-    while solution is not None:
-        print(renderer.render(solution) + "\n")
-        solution = solution.next_solution_board
+    solution = algorithm.find_solution(bs)
+    if solution:
+        print("\n\n".join(renderer.render(b) for b in solution))
+    else:
+        print("No solution", file=sys.stderr)
