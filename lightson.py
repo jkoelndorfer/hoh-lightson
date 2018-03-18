@@ -259,17 +259,44 @@ class LightsOnSolutionAlgorithm:
                 self.discovered_boards[potential_new_board.key] = potential_new_board
 
 
+def parse_board_string(s: str) -> BoardState:
+    """
+    Parses a string representing a Lights On board.
+
+    The expected string should contain only the characters "0", "1", and " ".
+    Each " " indicates the start of a new row. All rows must be the same length.
+
+    The first row in the string is at y-coordinate 0. The leftmost character in
+    each row is at x-coordinate 0.
+
+    "0" indicates that the cell is off. "1" indicates that the cell is on.
+    """
+    rows = s.strip().split()
+    rows_are_equal_length = all([len(r) == len(rows[0]) for r in rows])
+    if not rows_are_equal_length:
+        raise ValueError("All rows must have the same length")
+    width = len(rows[0])
+    height = len(rows)
+    bs = BoardState(width, height)
+    for y, row in enumerate(rows):
+        for x, cell in enumerate(row):
+            if cell == "1":
+                bs._board |= bs._coordinates_bit((x, y))
+            elif cell == "0":
+                pass
+            else:
+                raise ValueError("f{cell} is an invalid character")
+    return bs
+
+
 if __name__ == "__main__":
-    bs = BoardState(3, 3)
-    # This is an example board:
-    # [ ] [o] [ ]
-    # [o] [ ] [o]
-    # [o] [ ] [ ]
-    #
-    # TODO: Implement passing board via command line.
-    bs._board = 0b001_101_010
     renderer = BoardStateTextRenderer()
     algorithm = LightsOnSolutionAlgorithm()
+    try:
+        bs = parse_board_string(" ".join(sys.argv[1:]))
+    except IndexError:
+        print("You must pass a board string", file=sys.stderr)
+        exit(1)
     solution = algorithm.find_solution(bs)
     if solution:
         print("\n\n".join(renderer.render(b) for b in solution))
