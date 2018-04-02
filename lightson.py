@@ -11,6 +11,7 @@
 # Given the current puzzle, this script returns the solution requiring
 # the fewest number of steps.
 
+from collections import deque
 import sys
 from typing import Generator, List, Optional, Tuple
 
@@ -211,7 +212,7 @@ class LightsOnSolutionAlgorithm:
         self.discovered_boards = dict()
 
         #: A queue containing boards that need to be processed.
-        self.board_processing_queue = list()
+        self.board_processing_queue = deque()
 
     def _find_board_solution(self, board_state: BoardState) -> Optional[BoardState]:
         existing_solution: BoardState = self.discovered_boards.get(board_state.key, None)
@@ -226,7 +227,7 @@ class LightsOnSolutionAlgorithm:
         self.board_processing_queue.append(solution_board)
 
         while len(self.board_processing_queue) > 0:
-            current_board = self.board_processing_queue.pop(0)
+            current_board = self.board_processing_queue.pop()
             self._process_board_state(current_board)
 
         return self.discovered_boards.get(board_state.key, None)
